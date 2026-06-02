@@ -221,6 +221,11 @@ services:
 ---
 
 # Theory - Questions?
+---
+
+# I work on
+![bg left:50% background-size: contain](img/image.png)
+## OTV (Mitz)
 
 ---
 
@@ -234,17 +239,11 @@ Health provider have data about a patient
 
 Who is allowed to share this data with whom??
 
----
 
-# Product that I work for
-![bg left:40% background-size: contain](img/image.png)
-## OTV (Mitz)
 
 ---
 
-# COV - Controle op Verzekeringsgegevens
-
-![center](img/cov.png)
+![center](img/sharing.png)
 
 ---
 
