@@ -55,8 +55,9 @@ theme: my-theme
 
 # What we will do
 - Run SQL server with Aspire
+- Add the migrations
 - Add the projects
-- Add the migrations 
+- Build some extensions in Aspire
 
 ![bg 100% right:50%](https://www.rickneeft.dev/aspire-course-site/docs/Aspire/aspire-dashboard.png)
 

@@ -167,29 +167,26 @@ The theory, just a little bit, I promise
 
 # Dockerfile - Example
 ```dockerfile
-FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS base
-USER $APP_UID
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS base
 WORKDIR /app
 EXPOSE 8080
-EXPOSE 8081
 
-FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
-ARG BUILD_CONFIGURATION=Release
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
-COPY ["src/InsuranceDetails.Api/InsuranceDetails.Api.csproj", "src/InsuranceDetails.Api/"]
-RUN dotnet restore "src/InsuranceDetails.Api/InsuranceDetails.Api.csproj"
-COPY . .
-WORKDIR "/src/src/InsuranceDetails.Api"
-RUN dotnet build "./InsuranceDetails.Api.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
-FROM build AS publish
-ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "./InsuranceDetails.Api.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+COPY ["src/Data/Data.csproj", "src/Data/"]
+COPY ["src/DossierApi/DossierApi.csproj", "src/DossierApi/"]
+COPY NuGet.config .
+RUN dotnet restore "src/DossierApi/DossierApi.csproj"
+
+COPY src/Data/ src/Data/
+COPY src/DossierApi/ src/DossierApi/
+RUN dotnet publish "src/DossierApi/DossierApi.csproj" -c Release -o /app/publish --no-restore
 
 FROM base AS final
 WORKDIR /app
-COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "InsuranceDetails.Api.dll"]
+COPY --from=build /app/publish .
+ENTRYPOINT ["dotnet", "DossierApi.dll"]
 ```
 
 ---
@@ -205,31 +202,20 @@ ENTRYPOINT ["dotnet", "InsuranceDetails.Api.dll"]
 services:
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2022-latest
-    container_name: mssql
     environment:
-      SA_PASSWORD: YourStrongPassword123!
+      SA_PASSWORD: ${SQL_PASSWORD}
       ACCEPT_EULA: "Y"
+      MSSQL_PID: Express
     ports:
-      - "1433:1433"
+      - "2026:1433"
     volumes:
-      - sqlserver-data:/var/opt/mssql
-
-  insurancedetails-api:
-    build:
-      context: .
-      dockerfile: src/InsuranceDetails.Api/Dockerfile
-    container_name: insurancedetails-api
-    environment:
-      ASPNETCORE_ENVIRONMENT: Development
-      ConnectionStrings__InsuranceDetailsDb: "Server=sqlserver;Database=InsuranceDetailsDb;User Id=sa;Password=YourStrongPassword123!;TrustServerCertificate=True;"
-    ports:
-      - "8080:8080"
-      - "8081:8081"
-    depends_on:
-      - sqlserver
-
-volumes:
-  sqlserver-data:
+      - sqldata:/var/opt/mssql
+    healthcheck:
+      test: /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "$$SA_PASSWORD" -Q "SELECT 1" -No
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
 ```
 
 ---
@@ -238,21 +224,21 @@ volumes:
 
 ---
 
-# 🇳🇱 Dutch Healthcare System
+# Online toestemming -> Mitz
 
-- Every citizen has **basic health insurance** (*Basisverzekering*)
-- You can add **supplementary insurance** (*Aanvullende verzekering*)
-  - e.g. dental care, physiotherapy, travel vaccinations
-- **Health insurers** = private companies (e.g. Menzis, CZ)
-- **Health providers** = GPs, hospitals, specialists
+Health provider have data about a patient
 
+- GP -> Medical Data
+- Pharmist -> Medication data
+- Hospitals -> Lab results
 
-##### But who is insured where and for what?
+Who is allowed to share this data with whom??
 
 ---
 
-# First product (dienst) of VECOZO
-COV - Insurance Data Check (Controle op Verzekeringsgegevens)
+# Product that I work for
+![bg left:40% background-size: contain](img/image.png)
+## OTV (Mitz)
 
 ---
 
@@ -270,9 +256,9 @@ So far
 # Lets go!!
 
 ```
-https://www.rickneeft.dev/aspire-course-site/
+https://aspire.rickneeft.dev/
 ```
 
 ```
-https://github.com/rneeft/workshop-avans-2-juni
+https://github.com/rneeft/workshop-avans-3-juni
 ```
